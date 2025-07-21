@@ -21,6 +21,7 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Joaopaulolndev\FilamentEditProfile\Pages\EditProfilePage;
+use App\Filament\Admin\Pages\Dashboard; // <- pastikan ini ada
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -41,62 +42,60 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->maxContentWidth(MaxWidth::SevenExtraLarge)
             ->sidebarCollapsibleOnDesktop()
+
+            // Resources dan Pages
             ->discoverResources(in: app_path('Filament/Admin/Resources'), for: 'App\\Filament\\Admin\\Resources')
             ->discoverPages(in: app_path('Filament/Admin/Pages'), for: 'App\\Filament\\Admin\\Pages')
             ->pages([
-                Pages\Dashboard::class,
+                Dashboard::class, // Pastikan Dashboard page ditambahkan secara eksplisit
             ])
             ->discoverClusters(in: app_path('Filament/Admin/Clusters'), for: 'App\\Filament\\Admin\\Clusters')
             ->discoverWidgets(in: app_path('Filament/Admin/Widgets'), for: 'App\\Filament\\Admin\\Widgets')
             ->widgets([
                 \Awcodes\Overlook\Widgets\OverlookWidget::class,
             ])
+
+            // Navigasi
             ->navigationGroups([
-                NavigationGroup::make()
-                    ->label('Administration'),
+                NavigationGroup::make()->label('Administration'),
             ])
+
+            // Menu Profil User
             ->userMenuItems([
                 'profile' => MenuItem::make()
                     ->label(fn () => auth()->user()->name)
-                    ->url(fn (): string => EditProfilePage::getUrl())
+                    ->url(fn () => EditProfilePage::getUrl())
                     ->icon('heroicon-m-user-circle'),
-                // 'profile' => \Filament\Navigation\MenuItem::make()
-                //     ->label(fn () => auth()->user()->name)
-                //     ->icon('heroicon-m-user-circle'),
             ])
+
+            // Plugins
             ->plugins([
                 \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make()
-                    ->gridColumns([
-                        'default' => 2,
-                        'lg' => 3,
-                    ])
+                    ->gridColumns(['default' => 2, 'lg' => 3])
                     ->sectionColumnSpan(1)
-                    ->checkboxListColumns([
-                        'default' => 2,
-                        'lg' => 3,
-                    ])
-                    ->resourceCheckboxListColumns([
-                        'default' => 2,
-                        'lg' => 3,
-                    ]),
+                    ->checkboxListColumns(['default' => 2, 'lg' => 3])
+                    ->resourceCheckboxListColumns(['default' => 2, 'lg' => 3]),
+
                 \Hasnayeen\Themes\ThemesPlugin::make(),
+
                 \Njxqlus\FilamentProgressbar\FilamentProgressbarPlugin::make()->color('#29b'),
+
                 \DiogoGPinto\AuthUIEnhancer\AuthUIEnhancerPlugin::make()
                     ->showEmptyPanelOnMobile(false)
                     ->formPanelPosition('right')
                     ->formPanelWidth('40%')
                     ->emptyPanelBackgroundImageOpacity('70%')
                     ->emptyPanelBackgroundImageUrl('https://picsum.photos/seed/picsum/1260/750.webp/?blur=1'),
+
                 \Awcodes\LightSwitch\LightSwitchPlugin::make()
                     ->position(\Awcodes\LightSwitch\Enums\Alignment::BottomCenter)
-                    ->enabledOn([
-                        'auth.login',
-                        'auth.password',
-                    ]),
+                    ->enabledOn(['auth.login', 'auth.password']),
+
                 \Awcodes\Overlook\OverlookPlugin::make()
                     ->includes([
                         \App\Filament\Admin\Resources\UserResource::class,
                     ]),
+
                 \Joaopaulolndev\FilamentEditProfile\FilamentEditProfilePlugin::make()
                     ->slug('my-profile')
                     ->setTitle('My Profile')
@@ -106,10 +105,16 @@ class AdminPanelProvider extends PanelProvider
                     ->shouldShowBrowserSessionsForm()
                     ->shouldShowAvatarForm(),
             ])
+
+            // Tambahan Resources manual jika perlu
             ->resources([
                 config('filament-logger.activity_resource'),
             ])
+
+            // Vite Theme
             ->viteTheme('resources/css/filament/admin/theme.css')
+
+            // Middleware Panel
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
@@ -122,6 +127,8 @@ class AdminPanelProvider extends PanelProvider
                 DispatchServingFilamentEvent::class,
                 \Hasnayeen\Themes\Http\Middleware\SetTheme::class,
             ])
+
+            // Middleware Auth
             ->authMiddleware([
                 Authenticate::class,
             ]);
